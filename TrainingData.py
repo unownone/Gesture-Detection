@@ -55,10 +55,10 @@ def main():
     cap=cv2.VideoCapture(0)
     detector=htm.handDetector()
     countLabel = 0
-    columnLimit = 3
+    columnLimit = 10
 
     p = dict()
-    targetLabel = "sampleLabel"
+    targetLabel = "Sample"
     sampleSize = 50
     p['index'] = [targetLabel+"_" + str(i) for i in range (sampleSize)]
 
@@ -118,8 +118,7 @@ def main():
     df.insert((columnLimit*handPointSize*2)+1,"Label", [targetLabel for i in range(sampleSize)])
     df = df.iloc[1: , :]
     print(df)
-    # df.to_csv('trainingDataVector\\'+targetLabel+'_trainingdata.csv')
-    df.to_csv('trainingdata.csv')
+    df.to_csv('trainingData\\'+targetLabel+'_train.csv')
 
 if __name__=="__main__":
     main()
