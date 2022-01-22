@@ -55,7 +55,7 @@ def main():
     cap=cv2.VideoCapture(0)
     detector=htm.handDetector()
     countLabel = 0
-    columnLimit = 6
+    columnLimit = 3
 
     p = dict()
     targetLabel = "sampleLabel"
@@ -66,7 +66,7 @@ def main():
     comY = 0
     counter = 0
 
-    while countLabel<sampleSize*3:
+    while countLabel<sampleSize * columnLimit:
         success,img = cap.read()
         img = detector.findhands(img)
         lmlist = detector.findPosition(img)
@@ -89,7 +89,7 @@ def main():
                 p[str(counter)+'_x'] = [difX]
                 p[str(counter)+'_y'] = [difY]
 
-            counter = (counter+1)%3
+            counter = (counter+1) % columnLimit
 
             comX = comX_new
             comY = comY_new
@@ -110,57 +110,13 @@ def main():
 
 
     # print(p)
+    
     df = pd.DataFrame(p)
-    # df.insert(6,"Label", [targetLabel for i in range(sampleSize)])
+    df.insert((columnLimit*2)+1,"Label", [targetLabel for i in range(sampleSize)])
+    df = df.iloc[1: , :]
     print(df)
     # df.to_csv('trainingDataVector\\'+targetLabel+'_trainingdata.csv')
     df.to_csv('trainingdata.csv')
 
 if __name__=="__main__":
     main()
-
-
-
-    # while countLabel<sampleSize:
-    #     success,img = cap.read()
-    #     img = detector.findhands(img)
-    #     lmlist = detector.findPosition(img)
-        
-    #     if len(lmlist) != 0:
-    #         try:
-    #             comX, comY = getCenterOfMass(lmlist)
-    #             # distFromCOM, angleFromCOM = getVectorFromCenter(lmlist)
-    #         except:
-    #             continue
-
-    #         for i in range(0,21):
-    #             if str(i)+'_dist' in p:
-    #                 p[str(i)+'_dist'].append(distFromCOM[i])
-    #                 p[str(i)+'_angle'].append(angleFromCOM[i])
-    #             else:
-    #                 p[str(i)+'_dist'] = [distFromCOM[i]]
-    #                 p[str(i)+'_angle'] = [angleFromCOM[i]]
-
-    #         countLabel=countLabel+1
-            
-    #         #print(lmlist)
-    #         #print(distfromCOM)
-
-    #     cTime=time.time()
-    #     fps=1/(cTime-pTime)
-    #     pTime=cTime
-
-    #     cv2.putText(img, "FPS:"+str(int(fps)), (10,30), cv2.FONT_HERSHEY_PLAIN, 2, getFpsColor(fps), 2)
-    #     cv2.putText(img, "Frames taken: "+str(countLabel), (310,30), cv2.FONT_HERSHEY_PLAIN, 2, (150,0,0), 2)
-    #     cv2.imshow('image1',img)
-    #     keyPressed = cv2.waitKey(5)
-    #     # if keyPressed == ord('q'):
-    #     #     break;
-
-        # if len(lmlist) and not flag:
-            # try:
-            #     comX, comY = getCenterOfMass(lmlist)
-            # except:
-            #     print("#$#")
-            #     continue
-            # flag = 1
