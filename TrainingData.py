@@ -62,37 +62,40 @@ def main():
     sampleSize = 50
     p['index'] = [targetLabel+"_" + str(i) for i in range (sampleSize)]
 
-    comX = 0
-    comY = 0
     counter = 0
+    selectedHandPoints = [0,4,8,20]
+    handPointSize = len(selectedHandPoints)
+    lm = [[0 for i in range(handPointSize)] for j in range(2)]
+    dif = [[0 for i in range(handPointSize)] for j in range(2)]
 
-    while countLabel<sampleSize * columnLimit:
+    while countLabel < sampleSize * columnLimit:
+
         success,img = cap.read()
         img = detector.findhands(img)
         lmlist = detector.findPosition(img)
 
         if len(lmlist):
-            try:
-                comX_new, comY_new = getCenterOfMass(lmlist)
-            except:
-                continue
 
-            difX = comX_new - comX
-            difY = comY_new - comY
+            for i in range(2):
+                for j in range(handPointSize):
+                    dif[i][j] = lmlist[selectedHandPoints[j]][i] - lm[i][j]
             
             # put dif X and Y in training data
-            # for i in range(3):
-            if str(counter)+'_x' in p:
-                p[str(counter)+'_x'].append(difX)
-                p[str(counter)+'_y'].append(difY)
+            if str(counter)+'_0'+'_x' in p:
+                for j in range(handPointSize):
+                    p[str(counter)+'_'+str(selectedHandPoints[j])+'_x'].append(dif[0][j])
+                    p[str(counter)+'_'+str(selectedHandPoints[j])+'_y'].append(dif[1][j])
             else:
-                p[str(counter)+'_x'] = [difX]
-                p[str(counter)+'_y'] = [difY]
+                for j in range(handPointSize):
+                    p[str(counter)+'_'+str(selectedHandPoints[j])+'_x'] = [dif[0][j]]
+                    p[str(counter)+'_'+str(selectedHandPoints[j])+'_y'] = [dif[1][j]]
 
             counter = (counter+1) % columnLimit
 
-            comX = comX_new
-            comY = comY_new
+            for i in range(2):
+                for j in range(handPointSize):
+                    lm[i][j] = lmlist[selectedHandPoints[j]][i]
+
             countLabel += 1
 
 
@@ -112,7 +115,7 @@ def main():
     # print(p)
     
     df = pd.DataFrame(p)
-    df.insert((columnLimit*2)+1,"Label", [targetLabel for i in range(sampleSize)])
+    df.insert((columnLimit*handPointSize*2)+1,"Label", [targetLabel for i in range(sampleSize)])
     df = df.iloc[1: , :]
     print(df)
     # df.to_csv('trainingDataVector\\'+targetLabel+'_trainingdata.csv')
