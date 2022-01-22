@@ -59,40 +59,31 @@ def main():
 
     p = dict()
     targetLabel = "sampleLabel"
-    sampleSize = 50
-    p['index'] = [targetLabel+"_" + str(i) for i in range (sampleSize)]
-
+    sampleSize = 5
+    # p['index'] = [targetLabel+"_" + str(i) for i in range (sampleSize)]
+    for i in range(0,sampleSize):
+        p[targetLabel+"_" + str(i)]=[]
     comX = 0
     comY = 0
+    direction=[ (i,0,0) for i in range(21)]
     counter = 0
-
-    while countLabel<sampleSize * columnLimit:
+    handPointSize=6
+    flen=len
+    fstr=str
+    while countLabel<21*sampleSize*2:
         success,img = cap.read()
         img = detector.findhands(img)
         lmlist = detector.findPosition(img)
-
-        if len(lmlist):
+        if flen(lmlist):
             try:
-                comX_new, comY_new = getCenterOfMass(lmlist)
+                vectordiff=[]
+                for i in lmlist:
+                    vectordiff.append(getAngle(direction[i[0]][1],direction[i[0]][2],i[1],i[2]))
             except:
                 continue
-
-            difX = comX_new - comX
-            difY = comY_new - comY
-            
-            # put dif X and Y in training data
-            # for i in range(3):
-            if str(counter)+'_x' in p:
-                p[str(counter)+'_x'].append(difX)
-                p[str(counter)+'_y'].append(difY)
-            else:
-                p[str(counter)+'_x'] = [difX]
-                p[str(counter)+'_y'] = [difY]
-
-            counter = (counter+1) % columnLimit
-
-            comX = comX_new
-            comY = comY_new
+            for i in vectordiff:
+                p[targetLabel+"_" + fstr(countLabel%sampleSize)].append(i)
+            direction=[i for i in lmlist]
             countLabel += 1
 
 
@@ -109,11 +100,11 @@ def main():
             break
 
 
-    # print(p)
+    print(p)
     
     df = pd.DataFrame(p)
-    df.insert((columnLimit*2)+1,"Label", [targetLabel for i in range(sampleSize)])
-    df = df.iloc[1: , :]
+    # df.insert((columnLimit*2)+1,"Label", [targetLabel for i in range(sampleSize)])
+    # df = df.iloc[1: , :]
     print(df)
     # df.to_csv('trainingDataVector\\'+targetLabel+'_trainingdata.csv')
     df.to_csv('trainingdata.csv')
