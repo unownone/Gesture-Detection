@@ -52,14 +52,14 @@ def getVectorFromCenter(lmList):
 def main():
     pTime=0
     cTime=0
-    cap=cv2.VideoCapture(0)
+    cap=cv2.VideoCapture(1)
     detector=htm.handDetector()
     countLabel = 0
     columnLimit = 3
-
+    sampleName="no"
     p = dict()
     targetLabel = "sampleLabel"
-    sampleSize = 5
+    sampleSize = 10
     # p['index'] = [targetLabel+"_" + str(i) for i in range (sampleSize)]
     for i in range(0,sampleSize):
         p[targetLabel+"_" + str(i)]=[]
@@ -70,7 +70,7 @@ def main():
     handPointSize=6
     flen=len
     fstr=str
-    while countLabel<21*sampleSize*2:
+    while countLabel<21*sampleSize*10:
         success,img = cap.read()
         img = detector.findhands(img)
         lmlist = detector.findPosition(img)
@@ -78,7 +78,7 @@ def main():
             try:
                 vectordiff=[]
                 for i in lmlist:
-                    vectordiff.append(getAngle(direction[i[0]][1],direction[i[0]][2],i[1],i[2]))
+                    vectordiff.append(getAngle(direction[i[0]][1],direction[i[0]][2],i[1],i[2])*(findDistance(direction[i[0]][1],direction[i[0]][2],i[1],i[2])))
             except:
                 continue
             for i in vectordiff:
@@ -91,7 +91,7 @@ def main():
         fps=1/(cTime-pTime)
         pTime=cTime
 
-        cv2.putText(img, "FPS:"+str(int(fps)), (10,30), cv2.FONT_HERSHEY_PLAIN, 2, getFpsColor(fps), 2)
+        # cv2.putText(img, "FPS:"+str(int(fps)), (10,30), cv2.FONT_HERSHEY_PLAIN, 2, getFpsColor(fps), 2)
         cv2.putText(img, "Frames taken: "+str(countLabel), (310,30), cv2.FONT_HERSHEY_PLAIN, 2, (150,0,0), 2)
         cv2.imshow('image1',img)
 
@@ -101,13 +101,9 @@ def main():
 
 
     print(p)
-    
     df = pd.DataFrame(p)
-    # df.insert((columnLimit*2)+1,"Label", [targetLabel for i in range(sampleSize)])
-    # df = df.iloc[1: , :]
     print(df)
-    # df.to_csv('trainingDataVector\\'+targetLabel+'_trainingdata.csv')
-    df.to_csv('trainingdata.csv')
+    df.to_csv("before_model/"+sampleName+'trainingdata.csv')
 
 if __name__=="__main__":
     main()
