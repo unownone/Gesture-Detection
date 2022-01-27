@@ -18,8 +18,8 @@ def main():
             for i in lmlist:
                 print(str(i[0]) + ": (" + str(i[1]) + "," + str(i[2]) + ")\t")
             
-            chosenIndex = 4
-            cv2.circle(img, (lmlist[chosenIndex][1], lmlist[chosenIndex][2]), 14, (255,0,255), cv2.FILLED)
+            # chosenIndex = 4
+            # cv2.circle(img, (lmlist[chosenIndex][1], lmlist[chosenIndex][2]), 14, (255,0,255), cv2.FILLED)
             
             # if lmlist[4][2] > lmlist[3][2]:
             #     cv2.putText(img,"Thumbs Down",(100,70),cv2.FONT_HERSHEY_PLAIN,3,(0,0,255),3)
