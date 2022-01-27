@@ -58,7 +58,7 @@ def main():
     columnLimit = 10
 
     p = dict()
-    targetLabel = "No"
+    targetLabel = "Sample"
     sampleSize = 50
     p['index'] = [targetLabel+"_" + str(i) for i in range (sampleSize)]
 

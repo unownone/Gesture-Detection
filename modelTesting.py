@@ -58,9 +58,6 @@ def main():
     result = dict()
     result[1]='Hello'
     result[2]='Stop'
-    result[3]='roundabout'
-    result[4]='No'
-    
     columnLimit = 10
     
     loadedModel = pickle.load(open('RFCModel.sav','rb'))

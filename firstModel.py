@@ -8,26 +8,12 @@ import pickle
 
 df = pd.read_csv('trainingData.csv')
 df = df.iloc[: , 3:]
-Labels =  df['Label'].unique()
-print(Labels)
-df['Label'].replace(Labels[df['Label']])
-df['Label'] = [i for i in df['Label']]
 
-labelDict = dict()
-t = 1
-for i in range(196):
-    df['Label'][i] = Labels.find(df['Label'][i])
-
-# for i in range(196):
-#     if df['Label'][i]=='Hello':
-#         df['Label'][i] = 1
-#     elif df['Label'][i]=='Stop':
-#         df['Label'][i] = 2
-#     elif df['Label'][i]=='roundabout':
-#         df['Label'][i] = 3
-#     elif df['Label'][i]=='No':
-#         df['Label'][i] = 4
-    
+for i in range(98):
+    if df['Label'][i]=='Hello':
+        df['Label'][i] = 1
+    elif df['Label'][i]=='Stop':
+        df['Label'][i] = 2
 
 y = df['Label']
 y = y.astype('int')
