@@ -1,5 +1,6 @@
 import cv2
 import time
+import sys
 import mediapipe as mp
 import modules.HandTrackingModule as htm
 import numpy as np
@@ -29,13 +30,13 @@ def findDistance(x1,y1,x2,y2):
 def main():
     pTime = 0
     cTime = 0
-    frame=60
-    training_data=20
+    frame=30
+    training_data=30
     fig_name="go_awway"
     frame_value=[(0,0) for i in range(frame)]
     cap=cv2.VideoCapture(1)
     detector=htm.handDetector()
-    dist_ant=[[(i,0,0) for i in range(21)] for i in range(frame)]
+    dist_ant=[[(sys.maxsize,sys.maxsize,sys.maxsize) for i in range(21)] for i in range(frame)]
     train_dict={"dist_"+str(i) :[] for i in range(frame*21)}
     framesqu=0
     while framesqu<training_data*frame:
@@ -43,17 +44,19 @@ def main():
         img=detector.findhands(img)
         lmlist = detector.findPosition(img)
         if len(lmlist) != 0:
-            framesqu+=1
             frame_value.append(getCenterOfMass(lmlist))
             frame_value.pop(0)
             dist_ant.append(lmlist)
             dist_ant.pop(0)
             cx,cy=pro_center_of_mass(frame_value, frame)
-            t=0
-            for i in dist_ant:
-                for j in i:
-                    train_dict["dist_"+str(t)].append(findDistance(cx, cy, j[1], j[2]))
-                    t+=1
+            if dist_ant[0][0]!=(sys.maxsize,sys.maxsize,sys.maxsize):
+                framesqu+=1
+                t=0
+
+                for i in dist_ant:
+                    for j in i:
+                        train_dict["dist_"+str(t)].append(findDistance(cx, cy, j[1], j[2]))
+                        t+=1
         cTime = time.time()
         fps=1/(cTime-pTime)
         pTime=cTime
@@ -64,7 +67,6 @@ def main():
         if keyPressed == ord(chr(27)):
             break
     df = pd.DataFrame(train_dict)
-    df=df[60:,:]
     df.to_csv('newfolder\\'+fig_name+".csv")
 if __name__=="__main__":
     main()
