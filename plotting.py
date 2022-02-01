@@ -8,7 +8,10 @@ import matplotlib.pyplot as plt
 def main():
     pTime = 0
     cTime = 0
+<<<<<<< Updated upstream
     fig_name="go_awway"
+=======
+>>>>>>> Stashed changes
     cap=cv2.VideoCapture(1)
     detector=htm.handDetector()
     graphPlotX = [[0 for i in range(120)] for i in range(5)]
