@@ -32,7 +32,8 @@ def main():
     cTime = 0
     frame=30
     training_data=30
-    fig_name="go_awway"
+    fig_name="come"
+    dataval=1
     frame_value=[(0,0) for i in range(frame)]
     cap=cv2.VideoCapture(1)
     detector=htm.handDetector()
@@ -67,6 +68,10 @@ def main():
         if keyPressed == ord(chr(27)):
             break
     df = pd.DataFrame(train_dict)
+    ans=0
+    for i in range(1,len(fig_name)+1):
+        ans+=((ord(fig_name[i-1])-97)/i)
+    df["index"]=[ fig_name for i in range(len(df))]
     df.to_csv('newfolder\\'+fig_name+".csv")
 if __name__=="__main__":
     main()
