@@ -8,10 +8,11 @@ import matplotlib.pyplot as plt
 def main():
     pTime = 0
     cTime = 0
-    cap=cv2.VideoCapture(0)
+    fig_name="go_awway"
+    cap=cv2.VideoCapture(1)
     detector=htm.handDetector()
-    graphPlotX = [[] for i in range(5)]
-    graphPlotY = [[] for i in range(5)]
+    graphPlotX = [[0 for i in range(120)] for i in range(5)]
+    graphPlotY = [[0 for i in range(120)] for i in range(5)]
 
     while True:
         success,img=cap.read()
@@ -23,23 +24,33 @@ def main():
                 if i[0]<=4:
                     graphPlotX[0].append(-i[1])
                     graphPlotY[0].append(-i[2])
+                    graphPlotX[0].pop(0)
+                    graphPlotY[0].pop(0)
                 elif i[0]<=8:
                     graphPlotX[1].append(-i[1])
                     graphPlotY[1].append(-i[2])
+                    graphPlotX[1].pop(0)
+                    graphPlotY[1].pop(0)
                 elif i[0]<=12:
                     graphPlotX[2].append(-i[1])
                     graphPlotY[2].append(-i[2])
+                    graphPlotX[2].pop(0)
+                    graphPlotY[2].pop(0)
                 elif i[0]<=16:
                     graphPlotX[3].append(-i[1])
                     graphPlotY[3].append(-i[2])
+                    graphPlotX[3].pop(0)
+                    graphPlotY[3].pop(0)
                 else:
                     graphPlotX[4].append(-i[1])
                     graphPlotY[4].append(-i[2])
+                    graphPlotX[4].pop(0)
+                    graphPlotY[4].pop(0)
 
                 print(str(i[0]) + ": (" + str(i[1]) + "," + str(i[2]) + ")\t")
             
             chosenIndex = 4
-            cv2.circle(img, (lmlist[chosenIndex][1], lmlist[chosenIndex][2]), 14, (255,0,255), cv2.FILLED)
+            cv2.circle(img, (lmlist[chosenIndex][1], lmlist[chosenIndex][2]), 5, (255,0,255), cv2.FILLED)
             
             # if lmlist[4][2] > lmlist[3][2]:
             #     cv2.putText(img,"Thumbs Down",(100,70),cv2.FONT_HERSHEY_PLAIN,3,(0,0,255),3)
@@ -61,7 +72,8 @@ def main():
     plt.scatter(graphPlotX[2],graphPlotY[2])
     plt.scatter(graphPlotX[3],graphPlotY[3])
     plt.scatter(graphPlotX[4],graphPlotY[4])
-    plt.show()
+    plt.savefig("plot_img\\"+fig_name)
+    # plt.show()
 
 if __name__=="__main__":
     main()
