@@ -10,9 +10,9 @@ df = pd.read_csv('trainingData.csv')
 df = df.iloc[: , 3:]
 
 for i in range(98):
-    if df['Label'][i]=='Hello':
+    if df['Label'][i]=='Come_here':
         df['Label'][i] = 1
-    elif df['Label'][i]=='Stop':
+    elif df['Label'][i]=='Go_away':
         df['Label'][i] = 2
 
 y = df['Label']

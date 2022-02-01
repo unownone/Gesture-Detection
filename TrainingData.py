@@ -58,12 +58,12 @@ def main():
     columnLimit = 10
 
     p = dict()
-    targetLabel = "Sample"
+    targetLabel = "Come_here"
     sampleSize = 50
     p['index'] = [targetLabel+"_" + str(i) for i in range (sampleSize)]
 
     counter = 0
-    selectedHandPoints = [0,4,8,20]
+    selectedHandPoints = [i for i in range(21)]
     handPointSize = len(selectedHandPoints)
     lm = [[0 for i in range(handPointSize)] for j in range(2)]
     dif = [[0 for i in range(handPointSize)] for j in range(2)]

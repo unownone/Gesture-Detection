@@ -56,13 +56,13 @@ def main():
     detector=htm.handDetector()
 
     result = dict()
-    result[1]='Hello'
-    result[2]='Stop'
+    result[1]='Come here'
+    result[2]='Go away'
     columnLimit = 10
     
     loadedModel = pickle.load(open('RFCModel.sav','rb'))
 
-    selectedHandPoints = [0,4,8,20]
+    selectedHandPoints = [i for i in range(21)]
     handPointSize = len(selectedHandPoints)
     lm = [[0 for i in range(handPointSize)] for j in range(2)]
     dif = [[0 for i in range(handPointSize)] for j in range(2)]
