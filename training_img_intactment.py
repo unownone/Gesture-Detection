@@ -30,9 +30,9 @@ def findDistance(x1,y1,x2,y2):
 def main():
     pTime = 0
     cTime = 0
-    frame=30
-    training_data=30
-    fig_name="come"
+    frame=20
+    training_data=50
+    fig_name="turnaround"
     dataval=1
     frame_value=[(0,0) for i in range(frame)]
     cap=cv2.VideoCapture(1)
