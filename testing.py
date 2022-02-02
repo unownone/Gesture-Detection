@@ -33,7 +33,7 @@ def main():
     cTime = 0
     csv_val=pd.read_csv('trainingData.csv')
     frame=(len(csv_val.columns)-3)//21
-    print(frame)
+    # print(frame)
     cap=cv2.VideoCapture(1)
     detector=htm.handDetector()
     dist_ant=[[(sys.maxsize,sys.maxsize,sys.maxsize) for i in range(21)] for i in range(frame)]
@@ -68,13 +68,13 @@ def main():
                         fappend(findDistance(cx,cy,j[1],j[2]))
                         value_in_model.pop(0)
                 if value_in_model[0]!=sys.maxsize:
+
                     answer = loadedModel.predict([value_in_model])
-                    print(answer)
         cTime = time.time()
         fps=1/(cTime-pTime)
         pTime=cTime
         cv2.putText(img,str(int(fps)),(10,70),cv2.FONT_HERSHEY_PLAIN,3,(255,0,255),3)
-        # cv2.putText(img,pcheck[int(answer[0])],(100,70),cv2.FONT_HERSHEY_PLAIN,3,(255,0,255),3)
+        cv2.putText(img,pcheck[np.int16(answer).item()],(100,70),cv2.FONT_HERSHEY_PLAIN,3,(255,0,255),3)
         cv2.imshow('image1',img)
         keyPressed = cv2.waitKey(5)
         if keyPressed == ord(chr(27)):
