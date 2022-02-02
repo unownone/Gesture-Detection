@@ -26,11 +26,11 @@ class StaticGesture:
         self.trainLoc = trainLoc
         self.trainName = trainName
         self.show = show
+        self.detector = htm.handDetector()
 
     def staticTrain(self):
         pTime,cTime = 0,0
         cap = cv2.VideoCapture(0)
-        detector = htm.handDetector()
         countLabel = 0
 
         p = dict()
@@ -39,8 +39,8 @@ class StaticGesture:
         while countLabel < self.sampleSize:
 
             success,img = cap.read()
-            img = detector.findhands(img)
-            lmlist = detector.findPosition(img)
+            img = self.detector.findhands(img)
+            lmlist = self.detector.findPosition(img)
             
             if len(lmlist) != 0:
 
@@ -69,7 +69,8 @@ class StaticGesture:
             cv2.putText(img, "FPS:"+str(int(fps)), (10,30), cv2.FONT_HERSHEY_PLAIN, 2, getFpsColor(fps), 2)
             cv2.putText(img, "Frames taken: "+str(countLabel), (310,30), cv2.FONT_HERSHEY_PLAIN, 2, (150,0,0), 2)
             cv2.imshow('image1',img)
-            keyPressed = cv2.waitKey(5)
+            
+            # keyPressed = cv2.waitKey(5)
             # if keyPressed == ord('q'):
             #     break;
 
@@ -111,49 +112,43 @@ class StaticGesture:
         predictions = rfc.predict(X_test)
         print(classification_report(y_test,predictions))
 
-        rfc.fit(X,y)
+        rfc.fit(X.values,y.values)
+        self.model = rfc
+        # pickle.dump(rfc, open('RFCModel.sav', 'wb'))
 
-        pickle.dump(rfc, open('RFCModel.sav', 'wb'))
+    def testImage(self, img):
+        img = self.detector.findhands(img)
+        lmlist = self.detector.findPosition(img)
 
+        if len(lmlist) != 0:
+            try:
+                distFromCOM, angleFromCOM = getVectorFromCenter(lmlist)
+            except:
+                return -1
+            testList = []
+            for i in range(21):
+                testList.append(distFromCOM[i])
+                testList.append(angleFromCOM[i])
+            
+            answer = self.model.predict([testList])
+            return answer
+        else:
+            return -1
+    
     def staticTest(self):
         pTime,cTime = 0,0
         cap=cv2.VideoCapture(0)
-        detector=htm.handDetector()
-
-        # result = dict()
-        # result[1]='Victory'
-        # result[2]='Victory'
-        # result[3]='Good luck'
-        # result[4]='Stop'
-        # result[5]='You Lose'
         
-        loadedModel = pickle.load(open('RFCModel.sav','rb'))
         while True:
             success,img=cap.read()
-            img=detector.findhands(img)
-            lmlist = detector.findPosition(img)
+            answer = self.testImage(img)
             
             cv2.rectangle(img, (0,0), (650, 40), (0,0,0), -1)
             cv2.rectangle(img, (130,0), (650, 38), (255,255,255), -1)
             cv2.putText(img, "Result:", (140,30), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,0), 1)
 
-            if len(lmlist) != 0:
-                try:
-                    distFromCOM, angleFromCOM = getVectorFromCenter(lmlist)
-                except:
-                    continue
-                testList = []
-                for i in range(21):
-                    testList.append(distFromCOM[i])
-                    testList.append(angleFromCOM[i])
-                
-                answer = loadedModel.predict([testList])
-                # print(result[int(answer)])
-
+            if answer != -1:
                 cv2.putText(img, self.gestures[int(answer)], (260,30), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,0), 2)
-
-                #print(lmlist)
-                #print(distfromCOM)
             else:
                 cv2.putText(img, " (No Hands Detected)", (260,30), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,0), 1)
 
@@ -161,10 +156,9 @@ class StaticGesture:
             fps=1/(cTime-pTime)
             pTime=cTime
             
-            
             cv2.putText(img, "FPS:"+str(int(fps)), (10,30), cv2.FONT_HERSHEY_PLAIN, 2, getFpsColor(fps), 2)
-        
             cv2.imshow('image1',img)
+
             keyPressed = cv2.waitKey(5)
             if keyPressed == ord(chr(27)):
                 break
