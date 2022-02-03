@@ -1,43 +1,68 @@
+import modules.HandTrackingModule as htm
+from modules.GestureMath import *
+
 import cv2
 import time
 import mediapipe as mp
-import modules.HandTrackingModule as htm
 import numpy as np
 import csv
 import pandas as pd
 import glob
-
-from modules.GestureMath import *
 from math import *
 import json 
 import random
+import pickle
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import preprocessing
-import pickle
 
 class StaticGesture:
 
-    def __init__(self, targetLabel, sampleSize, trainLoc="trainingDataVector", trainName="trainingData", show=False):
+    def __init__(self, targetLabel, sampleSize, dataLoc=r"modules\staticTrainingData", trainName="staticData", modelName="RFCModel",show=False, cam=0):
         self.targetLabel = targetLabel
         self.sampleSize = sampleSize
-        self.trainLoc = trainLoc
-        self.trainName = trainName
+        self.dataLoc = dataLoc
         self.show = show
         self.detector = htm.handDetector()
+        self.cam = cam
+        self.trainName = trainName
+        self.modelName = modelName
+
+        try:
+            self.gestures = open(self.dataLoc+'\\gestures.csv', 'r').read().splitlines()
+            self.gestures.pop(0)
+        except:
+            print("Gesture File Not Found. Run the Model method first")
+
+        try:
+            self.model = pickle.load(open(self.dataLoc + "\\" + modelName +'.sav','rb'))
+        except:
+            print("Model File Not Found. Run the Model method first")
+
+    def cameraTest(self):
+        cap = cv2.VideoCapture(self.cam)
+        while True:
+            success,img = cap.read()
+            img = self.detector.findhands(img)
+            cv2.putText(img, str(random.randint(1,10)), (10,70), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
+
+            cv2.imshow('image1',img)
+
+            keyPressed = cv2.waitKey(5)
+            if keyPressed == ord(chr(27)):
+                break
 
     def staticTrain(self):
         pTime,cTime = 0,0
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(self.cam)
         countLabel = 0
 
         p = dict()
         p['index'] = [self.targetLabel+"_" + str(i) for i in range (self.sampleSize)]
 
         while countLabel < self.sampleSize:
-
             success,img = cap.read()
             img = self.detector.findhands(img)
             lmlist = self.detector.findPosition(img)
@@ -70,18 +95,19 @@ class StaticGesture:
             cv2.putText(img, "Frames taken: "+str(countLabel), (310,30), cv2.FONT_HERSHEY_PLAIN, 2, (150,0,0), 2)
             cv2.imshow('image1',img)
             
-            # keyPressed = cv2.waitKey(5)
-            # if keyPressed == ord('q'):
-            #     break;
+            keyPressed = cv2.waitKey(5)
+            if keyPressed == ord(chr(27)):
+                break
 
         # print(p)
         df = pd.DataFrame(p)
         df.insert(43,"Label", [self.targetLabel for i in range(self.sampleSize)])
-        print(df)
-        df.to_csv(self.trainLoc+'\\'+self.targetLabel+'_trainingdata.csv')
+        # print(df)
+        saveLoc = self.dataLoc+'\\'+self.targetLabel+'_data.csv'
+        df.to_csv(saveLoc)
 
     def joinTrainingSets(self):
-        path = self.trainLoc # use r in your path
+        path = self.dataLoc # use r in your path
         all_files = glob.glob(path + "/*.csv")
         
         li = []
@@ -91,13 +117,16 @@ class StaticGesture:
 
         self.gestureCount = len(li)
         frame = pd.concat(li, axis=0, ignore_index=True)
-        frame.to_csv(self.trainName+".csv")
+        saveLoc = self.dataLoc+'\\'+self.trainName+".csv"
+        frame.to_csv(saveLoc)
 
     def modelRFC(self):
-        df = pd.read_csv(self.trainName+'.csv')
+        df = pd.read_csv(self.dataLoc+'\\'+"staticData"+".csv")
         df = df.iloc[: , 3:]
 
         self.gestures = df['Label'].unique()
+        pd.DataFrame(self.gestures).to_csv(self.dataLoc+"\\gestures.csv", index=False)
+
         label_encoder = preprocessing.LabelEncoder()
         df['Label'] = label_encoder.fit_transform(df['Label'])
 
@@ -114,7 +143,7 @@ class StaticGesture:
 
         rfc.fit(X.values,y.values)
         self.model = rfc
-        # pickle.dump(rfc, open('RFCModel.sav', 'wb'))
+        pickle.dump(rfc, open(self.dataLoc + "\\" + self.modelName +'.sav', 'wb'))
 
     def testImage(self, img):
         img = self.detector.findhands(img)
@@ -137,7 +166,9 @@ class StaticGesture:
     
     def staticTest(self):
         pTime,cTime = 0,0
-        cap=cv2.VideoCapture(0)
+        cap=cv2.VideoCapture(self.cam)
+
+        df = pd.read_csv(self.dataLoc+'\\'+self.trainName+".csv")
         
         while True:
             success,img=cap.read()
@@ -163,14 +194,15 @@ class StaticGesture:
             if keyPressed == ord(chr(27)):
                 break
 
+# remove the modules parent from initial imports to use the below main method 
 
+# def main():
+#     sg = StaticGesture("Flat", 500)
+#     # sg.cameraTest()
+#     # sg.staticTrain()
+#     # sg.joinTrainingSets()
+#     # sg.modelRFC()
+#     sg.staticTest()
 
-def main():
-    sg = StaticGesture("flat", 500)
-    # sg.staticTrain()
-    # sg.joinTrainingSets()
-    sg.modelRFC()
-    sg.staticTest()
-
-if __name__=="__main__":
-    main()
+# if __name__=="__main__":
+#     main()
