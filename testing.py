@@ -75,7 +75,7 @@ def main():
         fps=1/(cTime-pTime)
         pTime=cTime
         cv2.putText(img,str(int(fps)),(10,70),cv2.FONT_HERSHEY_PLAIN,3,(255,0,255),3)
-        cv2.putText(img,pcheck[np.int16(answer).item()],(100,70),cv2.FONT_HERSHEY_PLAIN,3,(255,0,255),3)
+        cv2.putText(img,pcheck[np.int16(answer).item()],(100,70),cv2.FONT_HERSHEY_PLAIN,3,(255,0,103),3)
         cv2.imshow('image1',img)
         keyPressed = cv2.waitKey(5)
         if keyPressed == ord(chr(27)):
