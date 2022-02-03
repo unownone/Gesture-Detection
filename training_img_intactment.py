@@ -32,7 +32,7 @@ def main():
     cTime = 0
     frame=20
     training_data=50
-    fig_name="no"
+    fig_name="come"
     dataval=1
     frame_value=[(0,0) for i in range(frame)]
     cap=cv2.VideoCapture(1)
