@@ -22,7 +22,7 @@ def main():
     
     # User Inputs (Frames taken is columnLimit * rowCount)
     columnLimit = 20
-    targetLabel = ""
+    targetLabel = "Thumbs_Down"
     rowCount = 50
     selectedHandPoints = [0,4,8,20]
     # ----------------------

@@ -24,7 +24,9 @@ def main():
     result[1]='Go'
     result[2]='Hi'
     result[3]='No'
-    result[4]='Turn'
+    result[4]='Thumbs_Down'
+    result[5]='Thumbs_Up'
+    result[6]='Turn'
     result[100] = 'None'
     columnLimit = 20
     
