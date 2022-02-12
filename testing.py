@@ -47,6 +47,7 @@ def main():
     pcheck[5]="thumbs_down"
     pcheck[6]="thumbs_up"
     pcheck[7]="turnaround"
+    pcheck[8]="wave"
     answer=1
     flen=len
     fappend=value_in_model.append
@@ -66,10 +67,9 @@ def main():
                         cy+=j[2]
                         t+=1
                 cx,cy=cx/t,cy/t
-                val_ue=findDistance(cx, cy, dist_ant[0][0][1], dist_ant[0][0][2])
                 for i in dist_ant:
                     for j in i:
-                        fappend(findDistance(cx,cy,j[1],j[2])/val_ue)
+                        fappend(findDistance(cx,cy,j[1],j[2]))
                         value_in_model.pop(0)
                 if value_in_model[0]!=sys.maxsize:
 

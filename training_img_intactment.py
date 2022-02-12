@@ -53,16 +53,10 @@ def main():
             if dist_ant[0][0]!=(sys.maxsize,sys.maxsize,sys.maxsize):
                 framesqu+=1
                 t=0
-                val_div=findDistance(cx, cy, dist_ant[0][0][1], dist_ant[0][0][2]) 
                 for i in dist_ant:
                     for j in i:
-                        train_dict["dist_"+str(t)].append(findDistance(cx, cy, j[1], j[2])/val_div)
+                        train_dict["dist_"+str(t)].append(findDistance(cx, cy, j[1], j[2]))
                         t+=1
-                
-                
-                
-                    
-                
         cTime = time.time()
         fps=1/(cTime-pTime)
         pTime=cTime
