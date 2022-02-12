@@ -44,7 +44,9 @@ def main():
     pcheck[2]="go_awway"
     pcheck[3]="hiiiii"
     pcheck[4]="no"
-    pcheck[5]="turn_around"
+    pcheck[5]="thumbs_down"
+    pcheck[6]="thumbs_up"
+    pcheck[7]="turnaround"
     answer=1
     flen=len
     fappend=value_in_model.append
