@@ -5,6 +5,7 @@ import modules.HandTrackingModule as htm
 import numpy as np
 import csv
 import pandas as pd
+import modules.StaticGesture as sg
 
 from math import *
 import json 
@@ -56,10 +57,11 @@ def main():
     detector=htm.handDetector()
     countLabel = 0
     columnLimit = 10
+    gesture = sg.StaticGesture()
 
     p = dict()
     targetLabel = "Come_here"
-    sampleSize = 50
+    sampleSize = 20
     p['index'] = [targetLabel+"_" + str(i) for i in range (sampleSize)]
 
     counter = 0
@@ -71,33 +73,15 @@ def main():
     while countLabel < sampleSize * columnLimit:
 
         success,img = cap.read()
-        img = detector.findhands(img)
-        lmlist = detector.findPosition(img)
+        answer = gesture.testImage(img)
 
-        if len(lmlist):
+        if str(counter)+'_gesture' in p:
+            p[str(counter)+'_gesture'].append(answer)
+        else:
+            p[str(counter)+'_gesture'] = [answer]
 
-            for i in range(2):
-                for j in range(handPointSize):
-                    dif[i][j] = lmlist[selectedHandPoints[j]][i] - lm[i][j]
-            
-            # put dif X and Y in training data
-            if str(counter)+'_0'+'_x' in p:
-                for j in range(handPointSize):
-                    p[str(counter)+'_'+str(selectedHandPoints[j])+'_x'].append(dif[0][j])
-                    p[str(counter)+'_'+str(selectedHandPoints[j])+'_y'].append(dif[1][j])
-            else:
-                for j in range(handPointSize):
-                    p[str(counter)+'_'+str(selectedHandPoints[j])+'_x'] = [dif[0][j]]
-                    p[str(counter)+'_'+str(selectedHandPoints[j])+'_y'] = [dif[1][j]]
-
-            counter = (counter+1) % columnLimit
-
-            for i in range(2):
-                for j in range(handPointSize):
-                    lm[i][j] = lmlist[selectedHandPoints[j]][i]
-
-            countLabel += 1
-
+        counter = (counter+1) % columnLimit
+        countLabel += 1         
 
         cTime=time.time()
         fps=1/(cTime-pTime)
@@ -115,9 +99,9 @@ def main():
     # print(p)
     
     df = pd.DataFrame(p)
-    df.insert((columnLimit*handPointSize*2)+1,"Label", [targetLabel for i in range(sampleSize)])
+    df.insert((columnLimit)+1,"Label", [targetLabel for i in range(sampleSize)])
     df = df.iloc[1: , :]
-    print(df)
+    # print(df)
     df.to_csv('trainingData\\'+targetLabel+'_train.csv')
 
 if __name__=="__main__":

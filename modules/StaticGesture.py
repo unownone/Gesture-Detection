@@ -20,9 +20,7 @@ from sklearn import preprocessing
 
 class StaticGesture:
 
-    def __init__(self, targetLabel, sampleSize, dataLoc=r"modules\staticTrainingData", trainName="staticData", modelName="RFCModel",show=False, cam=0):
-        self.targetLabel = targetLabel
-        self.sampleSize = sampleSize
+    def __init__(self, dataLoc=r"modules\staticTrainingData", trainName="staticData", modelName="RFCModel",show=False, cam=0):
         self.dataLoc = dataLoc
         self.show = show
         self.detector = htm.handDetector()
@@ -41,28 +39,29 @@ class StaticGesture:
         except:
             print("Model File Not Found. Run the Model method first")
 
-    def cameraTest(self):
+    def cameraTest(self, showHand=False):
         cap = cv2.VideoCapture(self.cam)
         while True:
             success,img = cap.read()
-            img = self.detector.findhands(img)
+            if showHand==True:
+                img = self.detector.findhands(img)
+            
             cv2.putText(img, str(random.randint(1,10)), (10,70), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
-
             cv2.imshow('image1',img)
 
             keyPressed = cv2.waitKey(5)
             if keyPressed == ord(chr(27)):
                 break
 
-    def staticTrain(self):
+    def staticTrain(self, targetLabel, sampleSize):
         pTime,cTime = 0,0
         cap = cv2.VideoCapture(self.cam)
         countLabel = 0
 
         p = dict()
-        p['index'] = [self.targetLabel+"_" + str(i) for i in range (self.sampleSize)]
+        p['index'] = [targetLabel+"_" + str(i) for i in range (sampleSize)]
 
-        while countLabel < self.sampleSize:
+        while countLabel < sampleSize:
             success,img = cap.read()
             img = self.detector.findhands(img)
             lmlist = self.detector.findPosition(img)
@@ -101,14 +100,13 @@ class StaticGesture:
 
         # print(p)
         df = pd.DataFrame(p)
-        df.insert(43,"Label", [self.targetLabel for i in range(self.sampleSize)])
+        df.insert(43,"Label", [targetLabel for i in range(sampleSize)])
         # print(df)
-        saveLoc = self.dataLoc+'\\'+self.targetLabel+'_data.csv'
+        saveLoc = self.dataLoc+'\\'+targetLabel+'_data.csv'
         df.to_csv(saveLoc)
 
     def joinTrainingSets(self):
-        path = self.dataLoc # use r in your path
-        all_files = glob.glob(path + "/*.csv")
+        all_files = glob.glob(self.dataLoc + "/*_data.csv")
         
         li = []
         for filename in all_files:
@@ -145,6 +143,11 @@ class StaticGesture:
         self.model = rfc
         pickle.dump(rfc, open(self.dataLoc + "\\" + self.modelName +'.sav', 'wb'))
 
+    def addTrain(self, targetLabel, sampleSize):
+        self.staticTrain(targetLabel, sampleSize)
+        self.joinTrainingSets()
+        self.modelRFC()
+
     def testImage(self, img):
         img = self.detector.findhands(img)
         lmlist = self.detector.findPosition(img)
@@ -160,7 +163,7 @@ class StaticGesture:
                 testList.append(angleFromCOM[i])
             
             answer = self.model.predict([testList])
-            return answer
+            return answer[0]
         else:
             return -1
     
