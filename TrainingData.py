@@ -2,6 +2,8 @@ import cv2
 import time
 import mediapipe as mp
 import modules.HandTrackingModule as htm
+from modules.gestureMath import *
+
 import numpy as np
 import csv
 import pandas as pd
@@ -10,65 +12,35 @@ from math import *
 import json 
 import random
 
-def getFpsColor(fps):
-    if fps<=10:
-        return (0,0,150)
-    if fps>=30:
-        return (0,150,0)
-    g = min(150,(fps-10)*15)
-    r = min(150,150-((fps-20)*15))
-    return (0,g,r)
-    
-
-def getCenterOfMass(lmList):
-    sumX = 0
-    for i in range(21):
-        sumX = sumX + lmList[i][1]
-    sumY = 0
-    for i in range(21):
-        sumY = sumY + lmList[i][2]
-
-    return sumX/21, sumY/21
-
-def getAngle(comX, comY, x, y):
-    angle = atan((y-comY)/(x-comX))
-    return angle
-
-def findDistance(x1,y1,x2,y2):
-    return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2))
-
-def getVectorFromCenter(lmList):
-    comX, comY = getCenterOfMass(lmList)
-    distFromCOM = [0 for i in range(21)]
-    angleFromCOM = [0 for i in range(21)]
-
-    for i in range(21):
-        distFromCOM[i] = findDistance(comX, comY, lmList[i][1], lmList[i][2])
-        angleFromCOM[i] = getAngle(comX, comY, lmList[i][1], lmList[i][2])
-
-    return distFromCOM, angleFromCOM
-
-
 def main():
     pTime=0
     cTime=0
     cap=cv2.VideoCapture(0)
     detector=htm.handDetector()
     countLabel = 0
-    columnLimit = 10
-
     p = dict()
-    targetLabel = "Come_here"
-    sampleSize = 50
-    p['index'] = [targetLabel+"_" + str(i) for i in range (sampleSize)]
+    
+    # User Inputs (Frames taken is columnLimit * rowCount)
+    columnLimit = 20
+    targetLabel = ""
+    rowCount = 50
+    selectedHandPoints = [0,4,8,20]
+    # ----------------------
 
-    counter = 0
-    selectedHandPoints = [i for i in range(21)]
-    handPointSize = len(selectedHandPoints)
-    lm = [[0 for i in range(handPointSize)] for j in range(2)]
-    dif = [[0 for i in range(handPointSize)] for j in range(2)]
+    p['index'] = [targetLabel+"_" + str(i) for i in range (rowCount)]
+    column_names = []
+    for i in range(columnLimit):
+        column_names.append("size_ratio_"+str(i))
+        for j in selectedHandPoints:
+            column_names.append("dist_"+str(j)+"_"+str(i))
+            column_names.append("angle_"+str(j)+"_"+str(i))
+    data = [[0.0 for j in range(len(column_names))] for i in range(rowCount)]
+    df = pd.DataFrame(data, columns=column_names)
+    columnCounter = 0
+    rowCounter = 0
+    handPointCount = len(selectedHandPoints)
 
-    while countLabel < sampleSize * columnLimit:
+    while countLabel < rowCount * columnLimit:
 
         success,img = cap.read()
         img = detector.findhands(img)
@@ -76,28 +48,30 @@ def main():
 
         if len(lmlist):
 
-            for i in range(2):
-                for j in range(handPointSize):
-                    dif[i][j] = lmlist[selectedHandPoints[j]][i] - lm[i][j]
-            
-            # put dif X and Y in training data
-            if str(counter)+'_0'+'_x' in p:
-                for j in range(handPointSize):
-                    p[str(counter)+'_'+str(selectedHandPoints[j])+'_x'].append(dif[0][j])
-                    p[str(counter)+'_'+str(selectedHandPoints[j])+'_y'].append(dif[1][j])
-            else:
-                for j in range(handPointSize):
-                    p[str(counter)+'_'+str(selectedHandPoints[j])+'_x'] = [dif[0][j]]
-                    p[str(counter)+'_'+str(selectedHandPoints[j])+'_y'] = [dif[1][j]]
+            x_list = [i[1] for i in lmlist]
+            y_list = [i[2] for i in lmlist]
 
-            counter = (counter+1) % columnLimit
+            origin = (min(x_list), min(y_list))
+            terminal = (max(x_list), max(y_list))
+            boxLength = terminal[0] - origin[0]
+            boxHeight = terminal[1] - origin[1]
+            boxDiagonal = sqrt(boxLength*boxLength + boxHeight*boxHeight)
+            cv2.rectangle(img, origin, terminal, color=(0,0,255), thickness=2)
+            cv2.circle(img, origin, 3, (255,0,0), cv2.FILLED)
+            cv2.circle(img, terminal, 3, (255,0,0), cv2.FILLED)
 
-            for i in range(2):
-                for j in range(handPointSize):
-                    lm[i][j] = lmlist[selectedHandPoints[j]][i]
+            df["size_ratio_"+str(columnCounter)][rowCounter] = boxLength / boxHeight
+            for i in selectedHandPoints:
+                dist, angle = getVector(origin,(lmlist[i][1], lmlist[i][2]))
+                df["dist_"+str(i)+"_"+str(columnCounter)][rowCounter] = dist/boxDiagonal
+                df["angle_"+str(i)+"_"+str(columnCounter)][rowCounter] = angle
+
+            columnCounter += 1
+            if(columnCounter >= columnLimit):
+                columnCounter = 0
+                rowCounter += 1
 
             countLabel += 1
-
 
         cTime=time.time()
         fps=1/(cTime-pTime)
@@ -111,12 +85,7 @@ def main():
         if keyPressed == ord(chr(27)):
             break
 
-
-    # print(p)
-    
-    df = pd.DataFrame(p)
-    df.insert((columnLimit*handPointSize*2)+1,"Label", [targetLabel for i in range(sampleSize)])
-    df = df.iloc[1: , :]
+    df.insert((columnLimit*handPointCount*2)+1,"Label", [targetLabel for i in range(rowCount)])
     print(df)
     df.to_csv('trainingData\\'+targetLabel+'_train.csv')
 

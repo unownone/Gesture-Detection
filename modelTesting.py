@@ -2,6 +2,8 @@ import cv2
 import time
 import mediapipe as mp
 import modules.HandTrackingModule as htm
+from modules.gestureMath import *
+
 import numpy as np
 import csv
 import pandas as pd
@@ -11,44 +13,6 @@ from math import *
 import json 
 import random
 
-def getFpsColor(fps):
-    brightness = 200
-    if fps<=10:
-        return (0,0,brightness)
-    if fps>=30:
-        return (0,brightness,0)
-    g = min(brightness,(fps-10)*20)
-    r = min(brightness,brightness-((fps-20)*(brightness/10)))
-    return (0,g,r)
-
-def getCenterOfMass(lmList):
-    sumX = 0
-    for i in range(21):
-        sumX = sumX + lmList[i][1]
-    sumY = 0
-    for i in range(21):
-        sumY = sumY + lmList[i][2]
-
-    return sumX/21, sumY/21
-
-def getAngle(comX, comY, x, y):
-    angle = atan((y-comY)/(x-comX))
-    return angle
-
-def findDistance(x1,y1,x2,y2):
-    return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2))
-
-def getVectorFromCenter(lmList):
-    comX, comY = getCenterOfMass(lmList)
-    distFromCOM = [0 for i in range(21)]
-    angleFromCOM = [0 for i in range(21)]
-
-    for i in range(21):
-        distFromCOM[i] = findDistance(comX, comY, lmList[i][1], lmList[i][2])
-        angleFromCOM[i] = getAngle(comX, comY, lmList[i][1], lmList[i][2])
-
-    return distFromCOM, angleFromCOM
-
 def main():
     pTime=0
     cTime=0
@@ -56,24 +20,28 @@ def main():
     detector=htm.handDetector()
 
     result = dict()
-    result[1]='Come here'
-    result[2]='Go away'
-    columnLimit = 10
+    result[0]='Come'
+    result[1]='Go'
+    result[2]='Hi'
+    result[3]='No'
+    result[4]='Turn'
+    result[100] = 'None'
+    columnLimit = 20
     
     loadedModel = pickle.load(open('RFCModel.sav','rb'))
 
-    selectedHandPoints = [i for i in range(21)]
+    selectedHandPoints = [0,4,8,20]
     handPointSize = len(selectedHandPoints)
     lm = [[0 for i in range(handPointSize)] for j in range(2)]
     dif = [[0 for i in range(handPointSize)] for j in range(2)]
 
     counter = 0
     testList = []
-    answer = 1
+    answer = 100
 
     while True:
-        success,img=cap.read()
-        img=detector.findhands(img)
+        success,img = cap.read()
+        img = detector.findhands(img)
         lmlist = detector.findPosition(img)
         
         cv2.rectangle(img, (0,0), (650, 40), (0,0,0), -1)
@@ -83,20 +51,27 @@ def main():
         if counter % columnLimit == 0 and len(testList) != 0:
             answer = loadedModel.predict([testList])
             testList = []
+            counter = 0
 
         if len(lmlist):
 
-            for i in range(2):
-                for j in range(handPointSize):
-                    dif[i][j] = lmlist[selectedHandPoints[j]][i] - lm[i][j]
+            x_list = [i[1] for i in lmlist]
+            y_list = [i[2] for i in lmlist]
 
-            for i in range(handPointSize):
-                for j in range(2):
-                    testList.append(dif[j][i])
+            origin = (min(x_list), min(y_list))
+            terminal = (max(x_list), max(y_list))
+            boxLength = terminal[0] - origin[0]
+            boxHeight = terminal[1] - origin[1]
+            boxDiagonal = sqrt(boxLength*boxLength + boxHeight*boxHeight)
+            cv2.rectangle(img, origin, terminal, color=(0,0,255), thickness=2)
+            cv2.circle(img, origin, 3, (255,0,0), cv2.FILLED)
+            cv2.circle(img, terminal, 3, (255,0,0), cv2.FILLED)
 
-            for i in range(2):
-                for j in range(handPointSize):
-                    lm[i][j] = lmlist[selectedHandPoints[j]][i]
+            testList.append(boxLength / boxHeight)
+            for i in selectedHandPoints:
+                dist, angle = getVector(origin,(lmlist[i][1], lmlist[i][2]))
+                testList.append(dist/boxDiagonal)
+                testList.append(angle)
 
             counter = (counter+1) % columnLimit
             cv2.putText(img, result[int(answer)], (260,30), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,0), 2)

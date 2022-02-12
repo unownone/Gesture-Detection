@@ -4,18 +4,16 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.ensemble import RandomForestClassifier
+from sklearn import preprocessing
 import pickle
 
 df = pd.read_csv('trainingData.csv')
-df = df.iloc[: , 3:]
+df = df.iloc[: , 2:]
 
-for i in range(98):
-    if df['Label'][i]=='Come_here':
-        df['Label'][i] = 1
-    elif df['Label'][i]=='Go_away':
-        df['Label'][i] = 2
+label_encoder = preprocessing.LabelEncoder()
 
-y = df['Label']
+y = label_encoder.fit_transform(df['Label'])
+print(y)
 y = y.astype('int')
 X = df.drop('Label', axis=1)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=101)
