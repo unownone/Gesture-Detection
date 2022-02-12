@@ -32,7 +32,7 @@ def main():
     cTime = 0
     frame=20
     training_data=50
-    fig_name="thumbs_down"
+    fig_name="thumbs_up"
     dataval=1
     frame_value=[(0,0) for i in range(frame)]
     cap=cv2.VideoCapture(1)
@@ -53,11 +53,16 @@ def main():
             if dist_ant[0][0]!=(sys.maxsize,sys.maxsize,sys.maxsize):
                 framesqu+=1
                 t=0
-
+                val_div=findDistance(cx, cy, dist_ant[0][0][1], dist_ant[0][0][2]) 
                 for i in dist_ant:
                     for j in i:
-                        train_dict["dist_"+str(t)].append(findDistance(cx, cy, j[1], j[2]))
+                        train_dict["dist_"+str(t)].append(findDistance(cx, cy, j[1], j[2])/val_div)
                         t+=1
+                
+                
+                
+                    
+                
         cTime = time.time()
         fps=1/(cTime-pTime)
         pTime=cTime

@@ -66,9 +66,10 @@ def main():
                         cy+=j[2]
                         t+=1
                 cx,cy=cx/t,cy/t
+                val_ue=findDistance(cx, cy, dist_ant[0][0][1], dist_ant[0][0][2])
                 for i in dist_ant:
                     for j in i:
-                        fappend(findDistance(cx,cy,j[1],j[2]))
+                        fappend(findDistance(cx,cy,j[1],j[2])/val_ue)
                         value_in_model.pop(0)
                 if value_in_model[0]!=sys.maxsize:
 
