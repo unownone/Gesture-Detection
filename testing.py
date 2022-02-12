@@ -34,19 +34,22 @@ def main():
     csv_val=pd.read_csv('trainingData.csv')
     frame=(len(csv_val.columns)-3)//21
     # print(frame)
-    cap=cv2.VideoCapture(1)
+    cap=cv2.VideoCapture(0)
     detector=htm.handDetector()
     dist_ant=[[(sys.maxsize,sys.maxsize,sys.maxsize) for i in range(21)] for i in range(frame)]
     value_in_model=[sys.maxsize]*(21*frame)
     loadedModel = pickle.load(open('firstModel.sav','rb'))
     pcheck=dict()
     pcheck[1]="come"
-    pcheck[2]="go_awway"
+    pcheck[2]="goawway"
     pcheck[3]="hiiiii"
     pcheck[4]="no"
-    pcheck[5]="thumbs_down"
-    pcheck[6]="thumbs_up"
-    pcheck[7]="turnaround"
+    pcheck[5]="palm_down"
+    pcheck[6]="palm_up"
+    pcheck[7]="thumbs_down"
+    pcheck[8]="thumbs_up"
+    pcheck[9]="turnaround"
+    pcheck[10]="wave"
     answer=1
     flen=len
     fappend=value_in_model.append

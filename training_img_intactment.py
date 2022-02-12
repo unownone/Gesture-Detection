@@ -32,10 +32,10 @@ def main():
     cTime = 0
     frame=20
     training_data=50
-    fig_name="thumbs_up"
+    fig_name="palm_down"
     dataval=1
     frame_value=[(0,0) for i in range(frame)]
-    cap=cv2.VideoCapture(1)
+    cap=cv2.VideoCapture(0)
     detector=htm.handDetector()
     dist_ant=[[(sys.maxsize,sys.maxsize,sys.maxsize) for i in range(21)] for i in range(frame)]
     train_dict={"dist_"+str(i) :[] for i in range(frame*21)}
