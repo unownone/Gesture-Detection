@@ -21,6 +21,8 @@ def getCenterOfMass(lmList):
     return sumX/21, sumY/21
 
 def getAngle(comX, comY, x, y):
+    if x == comX:
+        return 1.570796
     angle = atan((y-comY)/(x-comX))
     return angle
 

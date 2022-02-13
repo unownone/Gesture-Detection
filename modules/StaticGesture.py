@@ -20,29 +20,66 @@ from sklearn import preprocessing
 
 class StaticGesture:
 
-    def __init__(self, dataLoc=r"modules\staticTrainingData", trainName="staticData", modelName="RFCModel",show=False, cam=0):
+    def __init__(self,  cam=0, dataLoc=r"modules\assets", trainLoc=r"modules\assets\staticTrainingData", trainName="staticData", modelName="RFCModel"):
+        """
+        Object to set up static gesture operations
+
+        Parameters
+        ----------
+        `cam` : int (default = 0)
+            Which camera device will be used
+        `dataloc` : string path (default = r'modules\assets')
+            location where all asset related data and other assets are stored
+        `trainloc` : string path (default = r'modules\assets\staticTrainingData')
+            location where all training data and other assets are stored
+        `trainName` : string (default = 'staticData')
+            FileName of final training data
+        `modelName` : string (deafult = 'RFCModel')
+            Exported model name
+
+        See Also
+        --------
+        `StaticGesture.cameraTest` : Test whether openCV can open your camera properly
+        `StaticGesture.staticTrain` : Train data with your own gestures
+        `StaticGesture.joinTrainingSets` : Combine all training data to one file
+        `StaticGesture.modelRFC` : Apply Random Forest Regression to create model 
+        `StaticGesture.addTrain` : Combine `staticTrain()`, `joinTrainingSets()`, `modelRFC()` into single method
+        `StaticGesture.testImage` : Test a single image frame and return result
+        `StaticGesture.staticTest` : Open Camera and Test the model real-time
+        """
         self.dataLoc = dataLoc
-        self.show = show
+        self.trainLoc = trainLoc
         self.detector = htm.handDetector()
         self.cam = cam
         self.trainName = trainName
         self.modelName = modelName
 
         try:
-            self.gestures = open(self.dataLoc+'\\gestures.csv', 'r').read().splitlines()
-            self.gestures.pop(0)
+            with open(self.dataLoc + "\\gestures.json", 'r') as f:
+                data = json.load(f)
+            self.gestures = data['gestures']
         except:
-            print("Gesture File Not Found. Run the Model method first")
+            print("Gesture File Not Found")
 
         try:
             self.model = pickle.load(open(self.dataLoc + "\\" + modelName +'.sav','rb'))
         except:
-            print("Model File Not Found. Run the Model method first")
+            print("Model File Not Found")
 
     def cameraTest(self, showHand=False):
+        """
+        Test whether openCV can open your camera properly
+        Camera device number can be changed during Object Initialisation
+
+        Parameters
+        ----------
+        `showHand` : boolean
+            Shows what skeleton the camera is picking up 
+        """
         cap = cv2.VideoCapture(self.cam)
         while True:
             success,img = cap.read()
+            print(type(img))
             if showHand==True:
                 img = self.detector.findhands(img)
             
@@ -53,7 +90,20 @@ class StaticGesture:
             if keyPressed == ord(chr(27)):
                 break
 
-    def staticTrain(self, targetLabel, sampleSize):
+    def staticTrain(self, targetLabel, sampleSize=500):
+        """
+        Train data with your own gestures
+
+        Parameters
+        ----------
+        `targetLabel` : string
+            Name of the gesture you want to return
+        `sampleSize` : int
+            - Number of rows of training data. 
+            - More sampleSize means more accuracy but it takes more time to train
+            - `Warning`: Using different sampleSize for different training data might cause mismatch and lead to unexpected results
+
+        """
         pTime,cTime = 0,0
         cap = cv2.VideoCapture(self.cam)
         countLabel = 0
@@ -98,15 +148,30 @@ class StaticGesture:
             if keyPressed == ord(chr(27)):
                 break
 
-        # print(p)
+
         df = pd.DataFrame(p)
         df.insert(43,"Label", [targetLabel for i in range(sampleSize)])
-        # print(df)
-        saveLoc = self.dataLoc+'\\'+targetLabel+'_data.csv'
+
+        jsonData = {}
+        with open(self.dataLoc + "\\gestures.json", 'r') as f:
+            jsonData = json.load(f)
+        if targetLabel not in jsonData['gestures']:
+            jsonData["gestures"].append(targetLabel)
+            jsonData["gestures"].sort()
+            self.gestures = jsonData['gestures']
+            with open(self.dataLoc + "\\gestures.json", 'w') as f:
+                json.dump(jsonData, f)
+
+        saveLoc = self.trainLoc+'\\'+targetLabel+'_data.csv'
         df.to_csv(saveLoc)
 
     def joinTrainingSets(self):
-        all_files = glob.glob(self.dataLoc + "/*_data.csv")
+        """
+        Combine all training data to one file
+
+        Takes all training data files from `self.dataloc` location
+        """
+        all_files = glob.glob(self.trainLoc + "/*_data.csv")
         
         li = []
         for filename in all_files:
@@ -119,11 +184,13 @@ class StaticGesture:
         frame.to_csv(saveLoc)
 
     def modelRFC(self):
+        """
+        Apply Random Forest Regression to create model 
+
+        Exports model by the name of `self.modelName`
+        """
         df = pd.read_csv(self.dataLoc+'\\'+"staticData"+".csv")
         df = df.iloc[: , 3:]
-
-        self.gestures = df['Label'].unique()
-        pd.DataFrame(self.gestures).to_csv(self.dataLoc+"\\gestures.csv", index=False)
 
         label_encoder = preprocessing.LabelEncoder()
         df['Label'] = label_encoder.fit_transform(df['Label'])
@@ -143,20 +210,39 @@ class StaticGesture:
         self.model = rfc
         pickle.dump(rfc, open(self.dataLoc + "\\" + self.modelName +'.sav', 'wb'))
 
-    def addTrain(self, targetLabel, sampleSize):
+    def addTrain(self, targetLabel, sampleSize = 500):
+        """
+        Combine `staticTrain()`, `joinTrainingSets()`, `modelRFC()` into single method
+
+        Parameters
+        ----------
+        `targetLabel` : string
+            Name of the gesture you want to return
+        `sampleSize` : int
+            - Number of rows of training data. 
+            - More sampleSize means more accuracy but it takes more time to train
+            - `Warning`: Using different sampleSize for different training data might cause mismatch and lead to unexpected results
+        """
         self.staticTrain(targetLabel, sampleSize)
         self.joinTrainingSets()
         self.modelRFC()
 
-    def testImage(self, img):
-        img = self.detector.findhands(img)
+    def testImage(self, img, show):
+        """
+        Test a single image frame and return result
+
+        Parameters
+        ----------
+        `img` : openCV cap.read() returned image of `numpy.ndarray` type
+            Image which be tested
+        `show` : boolean (default = True)
+            Shows the hand skeleton while viewing
+        """
+        img = self.detector.findhands(img, draw=False)
         lmlist = self.detector.findPosition(img)
 
         if len(lmlist) != 0:
-            try:
-                distFromCOM, angleFromCOM = getVectorFromCenter(lmlist)
-            except:
-                return -1
+            distFromCOM, angleFromCOM = getVectorFromCenter(lmlist)
             testList = []
             for i in range(21):
                 testList.append(distFromCOM[i])
@@ -167,35 +253,43 @@ class StaticGesture:
         else:
             return -1
     
-    def staticTest(self):
-        pTime,cTime = 0,0
-        cap=cv2.VideoCapture(self.cam)
+    def staticTest(self, show=True):
+        """
+        Start camera and test the model real-time
 
-        df = pd.read_csv(self.dataLoc+'\\'+self.trainName+".csv")
+        Parameters
+        ----------
+        `show` : boolean (default = True)
+            Shows the hand skeleton while viewing
+        """
+        pTime,cTime = 0,0
+        cap = cv2.VideoCapture(self.cam)        
         
         while True:
-            success,img=cap.read()
-            answer = self.testImage(img)
+            success,img = cap.read()
+            answer = self.testImage(img, show)
+            print(answer)
+
+            cTime=time.time()
+            fps=1/(cTime-pTime)
+            pTime=cTime
             
             cv2.rectangle(img, (0,0), (650, 40), (0,0,0), -1)
             cv2.rectangle(img, (130,0), (650, 38), (255,255,255), -1)
             cv2.putText(img, "Result:", (140,30), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,0), 1)
+            cv2.putText(img, "FPS:"+str(int(fps)), (10,30), cv2.FONT_HERSHEY_PLAIN, 2, getFpsColor(fps), 2)
 
             if answer != -1:
                 cv2.putText(img, self.gestures[int(answer)], (260,30), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,0), 2)
             else:
                 cv2.putText(img, " (No Hands Detected)", (260,30), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,0), 1)
 
-            cTime=time.time()
-            fps=1/(cTime-pTime)
-            pTime=cTime
-            
-            cv2.putText(img, "FPS:"+str(int(fps)), (10,30), cv2.FONT_HERSHEY_PLAIN, 2, getFpsColor(fps), 2)
             cv2.imshow('image1',img)
 
             keyPressed = cv2.waitKey(5)
             if keyPressed == ord(chr(27)):
                 break
+
 
 # remove the modules parent from initial imports to use the below main method 
 
