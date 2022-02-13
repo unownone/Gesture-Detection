@@ -1,4 +1,4 @@
-# Jesture (A Hand Gesture Detection Module)
+# Zexture (A Hand Gesture Detection Module)
 
 ![Project Image](https://i.imgur.com/dbYOsSO.png)
 

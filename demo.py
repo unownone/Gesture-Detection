@@ -19,10 +19,10 @@ def main():
     # gesture.cameraTest()
 
     # - Use the following method to train data with a target Label
-    # gesture.addTrain("Three")
+    gesture.addTrain("Sample")
 
     # - Test the trained model in real-time camera
-    gesture.staticTest()
+    # gesture.staticTest()
 
     # PRESS ESCAPE KEY IN ORDER TO CLOSE THE CAMERA
 
