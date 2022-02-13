@@ -19,7 +19,7 @@ def main():
     # gesture.cameraTest()
 
     # - Use the following method to train data with a target Label
-    # gesture.addTrain("Thumbs_up")
+    # gesture.addTrain("Your_Label")
 
     # - Test the trained model in real-time camera
     gesture.staticTest()

@@ -238,6 +238,7 @@ class StaticGesture:
         `show` : boolean (default = True)
             Shows the hand skeleton while viewing
         """
+        
         img = self.detector.findhands(img, draw=False)
         lmlist = self.detector.findPosition(img)
 
@@ -249,9 +250,10 @@ class StaticGesture:
                 testList.append(angleFromCOM[i])
             
             answer = self.model.predict([testList])
-            return answer[0]
+            result = self.gestures[int(answer)]
+            return result
         else:
-            return -1
+            return ""
     
     def staticTest(self, show=True):
         """
@@ -268,7 +270,6 @@ class StaticGesture:
         while True:
             success,img = cap.read()
             answer = self.testImage(img, show)
-            print(answer)
 
             cTime=time.time()
             fps=1/(cTime-pTime)
@@ -279,8 +280,8 @@ class StaticGesture:
             cv2.putText(img, "Result:", (140,30), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,0), 1)
             cv2.putText(img, "FPS:"+str(int(fps)), (10,30), cv2.FONT_HERSHEY_PLAIN, 2, getFpsColor(fps), 2)
 
-            if answer != -1:
-                cv2.putText(img, self.gestures[int(answer)], (260,30), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,0), 2)
+            if answer != "":
+                cv2.putText(img, answer, (260,30), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,0), 2)
             else:
                 cv2.putText(img, " (No Hands Detected)", (260,30), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,0), 1)
 
