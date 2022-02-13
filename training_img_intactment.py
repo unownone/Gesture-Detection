@@ -32,10 +32,10 @@ def main():
     cTime = 0
     frame=20
     training_data=50
-    fig_name="palm_down"
+    fig_name="vertical_round"
     dataval=1
     frame_value=[(0,0) for i in range(frame)]
-    cap=cv2.VideoCapture(0)
+    cap=cv2.VideoCapture(1)
     detector=htm.handDetector()
     dist_ant=[[(sys.maxsize,sys.maxsize,sys.maxsize) for i in range(21)] for i in range(frame)]
     train_dict={"dist_"+str(i) :[] for i in range(frame*21)}
@@ -66,10 +66,14 @@ def main():
         keyPressed = cv2.waitKey(5)
         if keyPressed == ord(chr(27)):
             break
+    for j in train_dict:
+        h=[i for i in train_dict[j]]
+        for j1 in h:
+            a=1-0.002
+            for z in range(1,500):
+                train_dict[j].append(j1*(a))
+                a-=0.002
     df = pd.DataFrame(train_dict)
-    ans=0
-    for i in range(1,len(fig_name)+1):
-        ans+=((ord(fig_name[i-1])-97)/i)
     df["index"]=[ fig_name for i in range(len(df))]
     df.to_csv('newfolder\\'+fig_name+".csv")
 if __name__=="__main__":

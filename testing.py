@@ -44,9 +44,9 @@ def main():
     pcheck[2]="go_awway"
     pcheck[3]="hiiiii"
     pcheck[4]="no"
-    pcheck[5]="thumbs_down"
-    pcheck[6]="thumbs_up"
-    pcheck[7]="turnaround"
+    pcheck[5]="thumbs_up"
+    pcheck[6]="turnaround"
+    pcheck[7]="veritical_round"
     pcheck[8]="wave"
     answer=1
     flen=len
