@@ -19,7 +19,7 @@ def main():
     # gesture.cameraTest()
 
     # - Use the following method to train data with a target Label
-    # gesture.addTrain("Your_Label")
+    # gesture.addTrain("Three")
 
     # - Test the trained model in real-time camera
     gesture.staticTest()

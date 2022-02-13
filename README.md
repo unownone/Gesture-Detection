@@ -2,7 +2,6 @@
 
 ![Project Image](https://i.imgur.com/dbYOsSO.png)
 
-
 ---
 
 ### Table of Contents

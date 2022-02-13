@@ -239,7 +239,7 @@ class StaticGesture:
             Shows the hand skeleton while viewing
         """
         
-        img = self.detector.findhands(img, draw=False)
+        img = self.detector.findhands(img, draw=show)
         lmlist = self.detector.findPosition(img)
 
         if len(lmlist) != 0:
