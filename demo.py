@@ -1,9 +1,9 @@
 # import the Static Gesture Module 
-import modules.StaticGesture as sg
+import modules.Zexture as sg
 
 def main():
     # - Create an object that will be used to perform all the functionalities
-    gesture = sg.StaticGesture()
+    gesture = sg.Zexture()
     # Parameters
     # ----------
     # `cam` : int (default = 0)
@@ -19,7 +19,7 @@ def main():
     # gesture.cameraTest()
 
     # - Use the following method to train data with a target Label
-    #gesture.addTrain("Zexture")
+    # gesture.addTrain("Sample_Label")
 
     # - Test the trained model in real-time camera
     gesture.staticTest()
