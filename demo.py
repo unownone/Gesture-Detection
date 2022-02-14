@@ -19,7 +19,8 @@ def main():
     # gesture.cameraTest()
 
     # - Use the following method to train data with a target Label
-    # gesture.addTrain("Sample_Label")
+    # After training, it picture will pause for a few seconds, pls be patient
+    # gesture.addTrain("Four")
 
     # - Test the trained model in real-time camera
     gesture.staticTest()

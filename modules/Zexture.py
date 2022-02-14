@@ -152,16 +152,6 @@ class Zexture:
         df = pd.DataFrame(p)
         df.insert(43,"Label", [targetLabel for i in range(sampleSize)])
 
-        jsonData = {}
-        with open(self.dataLoc + "\\gestures.json", 'r') as f:
-            jsonData = json.load(f)
-        if targetLabel not in jsonData['gestures']:
-            jsonData["gestures"].append(targetLabel)
-            jsonData["gestures"].sort()
-            self.gestures = jsonData['gestures']
-            with open(self.dataLoc + "\\gestures.json", 'w') as f:
-                json.dump(jsonData, f)
-
         saveLoc = self.trainLoc+'\\'+targetLabel+'_data.csv'
         df.to_csv(saveLoc)
 
@@ -172,11 +162,20 @@ class Zexture:
         Takes all training data files from `self.dataloc` location
         """
         all_files = glob.glob(self.trainLoc + "/*_data.csv")
+        jsonData = {}
+        with open(self.dataLoc + "\\gestures.json", 'r') as f:
+            jsonData = json.load(f)
+            jsonData["gestures"] = []
         
         li = []
         for filename in all_files:
             df = pd.read_csv(filename, index_col=None, header=0)
+            jsonData["gestures"].append(df["Label"][0])
             li.append(df)
+        
+        self.gestures = jsonData['gestures']
+        with open(self.dataLoc + "\\gestures.json", 'w') as f:
+            json.dump(jsonData, f)
 
         self.gestureCount = len(li)
         frame = pd.concat(li, axis=0, ignore_index=True)

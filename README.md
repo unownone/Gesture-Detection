@@ -1,6 +1,6 @@
 # Zexture (A Hand Gesture Detection Module)
 
-![Project Image](https://i.imgur.com/dbYOsSO.png)
+![Project Image](https://i.imgur.com/QDD90Lk.jpeg)
 
 ---
 
@@ -47,8 +47,9 @@ You would require to clone this repository branch to your local device
 
 Also you will need to run these commands in order to use the required libraries
 - `pip install mediapipe`
-- `pip install opencv`
+- `pip install opencv-python`
 - `pip install sklearn`
+- `pip install pickle`
 
 ### What to do?
 
@@ -56,33 +57,41 @@ Also you will need to run these commands in order to use the required libraries
 
 When you open the cloned repo, the folder structure would look something like this
 
-![Project Image](https://i.imgur.com/22ngBXe.jpg)
+![Project Image](https://i.imgur.com/zYiAC1v.jpeg)
 
 You have been provided with a demo.py to see how you would be able to use the module methods
 
-![Project Image](https://i.imgur.com/Esg8ezs.jpeg)
-
 Run the file as it is to test the built-in gestures
+
+These are all the built-in available gestures
+
+![Project Image](https://i.imgur.com/OJiS5uV.png)
 
 If it doesn't work, go to [Troubleshooting](#working-of-project) section.
 
-![Project Image](https://i.imgur.com/2lrQufa.jpg)
-
 All types of posible tweaks can be seen by hovering over `StaticGesture()` method or by going to the `modules/StaticGesture.py`
 
-![Project Image](https://i.imgur.com/yPol8rG.jpg)
+![Project Image](https://i.imgur.com/9s5F0dJ.jpeg)
 
-Now its time for you to make some training data yourself
+### Lets make some training data 
 
 Comment the `gesture.staticTest()` statement and uncomment the `gesture.addTrain("Your_Label")`
 
 Replace the label string and run the file. It would run for 500 frames where your hand is visible.
 > Make sure you move your hand gesture in a fasion so that it covers all perspectives of that hand gesture 
 
-![Project Image](https://i.imgur.com/zXwSrg6.jpg)
-![Project Image](https://i.imgur.com/lbI1dSh.jpg)
+Now, reverse the last step by commenting the `gesture.addTrain("Your_Label")` statement and uncommenting the `gesture.staticTest()`
 
-Song reccomendations are right on your screen. Any song which is reccommended to you and you didn't click are the ones which carry a similar trait to one or multiple songs you've chosen.
+Run the `demo.py` file and you would be able to see the gesture recognised.
+
+All the available gestures can seen in the `gestures.json` in `modules/assets`
+
+### Let's move on to how can you use it for your own projects
+
+A method called `testImage()` exists which takes in openCV image of `numpy.ndarray` type as parameter and returns a string label by using the model file `RFCModel.sav`
+
+First use, delete the gestures you don't need from `modules/assets/staticTrainingData`, then use `addTrain()` method to input all gestures you want and check/test it using `staticTest()` 
+
 
 ---
 
