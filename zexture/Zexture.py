@@ -1,5 +1,5 @@
-import modules.HandTrackingModule as htm
-from modules.GestureMath import *
+import zexture.HandTrackingModule as htm
+from zexture.GestureMath import *
 
 import cv2
 import time
